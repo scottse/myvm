@@ -54,8 +54,8 @@ create_cloudinit_iso() {
   echo "pass"
 }
 
-vm_install_small() {
-
+debian_quick() {
+  local vm_name=deb_vm_$(date +%y%m%d-%H%M)
 virt-install \
   --name $vm_name \
   --memory 2G \
@@ -70,6 +70,21 @@ virt-install \
   --import \
   --noautoconsole
 
+}
+debian_custom() {
+  echo
+}
+
+ubuntu_quick() {
+  echo
+}
+
+fedora_quick() {
+  echo
+}
+
+fedora_custom() {
+  echo
 }
 sub_download() {
   echo
@@ -107,23 +122,21 @@ sub_download() {
 sub_debian() {
   echo
   echo "========================================================="
-  echo "= Select the VM size from small, medium, and large.     ="
-  echo "= Small: 2GB of memory, 1 VCPU, 25GB virtual disk.      ="
-  echo "= Medium: 4GB of memory, 2 VCPUs, 50GB Virtual disk.    ="
-  echo "= Large: 8GB of memory, 2 vCPUs, 50GB Virtual disk.     ="
+  echo "= ="
+  echo "= ="
+  echo "= ="
+  echo "= ="
   echo "========================================================="
   echo
   local PS3="Please select an option below: "
-  local options=("Small" "Medium" "Large" "Main")
+  local options=("Quick" "Custom" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
-      "Small")
+      "Quick")
         echo "small" ;;
-      "Medium")
+      "Custom")
         echo "medium" ;;
-      "Large")
-        echo "large" ;;
       "Main")
        echo "Return to main menu"
        menu
@@ -142,16 +155,14 @@ sub_ubuntu() {
   echo "========================================================="
   echo
   local PS3="Please select an option below: "
-  local options=("Small" "Medium" "Large" "Main")
+  local options=("Quick" "Custom" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
-      "Small")
+      "Quick")
         echo "small" ;;
-      "Medium")
+      "Custom")
         echo "medium" ;;
-      "Large")
-        echo "large" ;;
       "Main")
        echo "Return to main menu"
        menu
@@ -163,14 +174,14 @@ sub_ubuntu() {
 sub_fedora() {
   echo
   echo "========================================================="
-  echo "= Select the VM size from small, medium, and large.     ="
-  echo "= Small: 2GB of memory, 1 VCPU, 25GB virtual disk.      ="
-  echo "= Medium: 4GB of memory, 2 VCPUs, 50GB Virtual disk.    ="
-  echo "= Large: 8GB of memory, 2 vCPUs, 50GB Virtual disk.     ="
+  echo "=    ="
+  echo "=      ="
+  echo "=     ="
+  echo "=   ="
   echo "========================================================="
   echo
   local PS3="Please select an option below: "
-  local options=("Small" "Medium" "Large" "Main")
+  local options=("Quick" "Custom" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -178,8 +189,6 @@ sub_fedora() {
         echo "small" ;;
       "Medium")
         echo "medium" ;;
-      "Large")
-        echo "large" ;;
       "Main")
        echo "Return to main menu"
        menu
