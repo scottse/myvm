@@ -55,7 +55,9 @@ create_cloudinit_iso() {
 }
 
 debian_quick() {
-  local vm_name=deb_vm_$(date +%y%m%d-%H%M)
+  local vm_name=deb_vm_$(date +%y%m%d-%H%M
+  local os_disk=$vm_name
+  local cloud_init_iso=
 virt-install \
   --name $vm_name \
   --memory 2G \
