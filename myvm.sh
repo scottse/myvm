@@ -3,6 +3,8 @@
 # Username and hashed password for VMs
 USERNAME='test'
 PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSwm0pieDPPHHmXQaW8LR.L58xFK5TRIAwNyZS1'
+#Disk size for quick VMs
+QUICK_DISK_SIZE=10G
 # Libvirt VM images storage
 LV_IMG_DIR='/var/lib/libvirt/images'
 # Ubuntu 22.04 download link
@@ -122,7 +124,7 @@ system_info:
     name: $USERNAME
     home: /home/$USERNAME
 
-password: test
+password: $PASSWORD
 chpasswd: { expire: False }
 hostname: $deb_vm_name
 ssh_pwauth: True
@@ -154,12 +156,117 @@ EOF
     --network network=default,model=virtio \
     --import \
     --noautoconsole
+  #Return user back to menu.
+  menu
 }
 
 ubuntu_quick() {
-  echo
-}
+  local vm_name=uvm-$(date +%y%m%d-%H%M)
+  local os_disk=$vm_name
+  local cloud_init_iso=$vm_name.iso
+  
+  # Create VM directory.
+  echo "Creating a new directory for $vm_name."
+  mkdir $LV_IMG_DIR/$vm_name
 
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_IMG_DIR/$vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+hostname: $vm_name
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+
+  cloud-localds $LV_IMG_DIR/$vm_name/cloud-init.iso \
+  $LV_IMG_DIR/$vm_name/cloud-init.cfg
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
+  
+  # Resize cloud image disk to 10GB.
+  echo "Resizing VM disk space to 10GB."
+  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 10G
+  
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $vm_name \
+    --memory 2048 \
+    --vcpus=1 \
+    --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=ubuntu-lts-latest \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  # Return user back to main menu
+  menu
+}
+ubuntu_custom() {
+    # Asking user for specific parameters for the custom VM.
+  read -p "VM name? " u_vm_name
+  read -p "VM disk size (in GB)? " u_vm_disk_size
+  read -p "How many vCPUs? " deb_vcpus
+  read -p "How much memory (in MB)? " u_memory
+  # Create VM directory.
+  echo "Creating a new directory for $u_vm_name."
+  mkdir $LV_IMG_DIR/$u_vm_name
+
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_IMG_DIR/$u_vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+hostname: $deb_vm_name
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  cloud-localds $LV_IMG_DIR/$u_vm_name/cloud-init.iso \
+  $LV_IMG_DIR/$u_vm_name/cloud-init.cfg
+
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $u_vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name/$u_vm_name.qcow2
+  
+  # Resize VM disk size.
+  echo "Resizing VM disk space to $u_vm_disk_size."
+  qemu-img resize $LV_IMG_DIR/$u_vm_name/$u_vm_name.qcow2 $u_vm_disk_size
+
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $u_vm_name \
+    --memory $u_memory \
+    --vcpus=$deb_vcpus \
+    --disk /var/lib/libvirt/images/$u_vm_name/$u_vm_name.qcow2,device=disk,bus=virtio \
+    --disk /var/lib/libvirt/images/$u_vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=ubuntu-lts-latest \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  #Return user back to menu.
+  menu
+}
 fedora_quick() {
   echo
 }
@@ -207,7 +314,7 @@ sub_debian() {
   echo "= 10GB VM disk, and uses predefined usernames,        ="
   echo "= passwords, and hostname.                            ="
   echo "=                                                     ="
-  echo "= The custom option creates a VM with user speicifed  ="
+  echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
   echo "======================================================="
   echo
@@ -235,7 +342,7 @@ sub_ubuntu() {
   echo "= 10GB VM disk, and uses predefined usernames,        ="
   echo "= passwords, and hostname.                            ="
   echo "=                                                     ="
-  echo "= The custom option creates a VM with user speicifed  ="
+  echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
   echo "======================================================="
   echo
@@ -245,9 +352,9 @@ sub_ubuntu() {
   select opt in "${options[@]}"; do
     case $opt in
       "Quick")
-        echo "small" ;;
+        ubuntu_quick ;;
       "Custom")
-        echo "medium" ;;
+        ubuntu_custom ;;
       "Main")
        echo "Return to main menu"
        menu
@@ -263,7 +370,7 @@ sub_fedora() {
   echo "= 10GB VM disk, and uses predefined usernames,        ="
   echo "= passwords, and hostname.                            ="
   echo "=                                                     ="
-  echo "= The custom option creates a VM with user speicifed  ="
+  echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
   echo "======================================================="
   echo
@@ -289,7 +396,7 @@ menu() {
   echo
   echo "=============================================================="
   echo "= The myvm bash script is able to download cloud images from ="
-  echo "= Debian, Fedora, and Ubuntu, utializing Cloud-init to prov- ="
+  echo "= Debian, Fedora, and Ubuntu, utilizing Cloud-init to prov- ="
   echo "= ide hostname, username, password, etc... to the VM.        ="
   echo "=                                                            ="
   echo "= Please select an option below to get started.              ="
