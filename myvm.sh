@@ -268,7 +268,57 @@ EOF
   menu
 }
 fedora_quick() {
-  echo
+  local vm_name=fvm-$(date +%y%m%d-%H%M)
+  local os_disk=$vm_name
+  local cloud_init_iso=$vm_name.iso
+  
+  # Create VM directory.
+  echo "Creating a new directory for $vm_name."
+  mkdir $LV_IMG_DIR/$vm_name
+
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_IMG_DIR/$vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+
+EOF
+
+  # Creates the cloud-init.iso file.
+
+  cloud-localds $LV_IMG_DIR/$vm_name/cloud-init.iso \
+  $LV_IMG_DIR/$vm_name/cloud-init.cfg
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
+  
+  # Resize cloud image disk to 10GB.
+  echo "Resizing VM disk space to 10GB."
+  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 10G
+  
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $vm_name \
+    --memory 2048 \
+    --vcpus=1 \
+    --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=fedora38 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  # Return user back to main menu
+  menu
 }
 
 fedora_custom() {
@@ -379,10 +429,10 @@ sub_fedora() {
   local opt
   select opt in "${options[@]}"; do
     case $opt in
-      "Small")
-        echo "small" ;;
-      "Medium")
-        echo "medium" ;;
+      "Quick")
+        fedora_quick ;;
+      "Custom")
+        fedora_custom ;;
       "Main")
        echo "Return to main menu"
        menu
