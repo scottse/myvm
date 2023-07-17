@@ -5,8 +5,10 @@ USERNAME='test'
 PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSwm0pieDPPHHmXQaW8LR.L58xFK5TRIAwNyZS1'
 #Disk size for quick VMs
 QUICK_DISK_SIZE=10G
+QUICK_MEM_SIZE=2048
 # Libvirt VM images storage
 LV_IMG_DIR='/var/lib/libvirt/images'
+LV_CLD_DIR='/var/lib/libvirt/cloud-init'
 # Ubuntu 22.04 download link
 # UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
 UBUNTU_CLD_IMG='http://192.168.1.8/jammy-server-cloudimg-amd64.img'
@@ -55,15 +57,14 @@ d_fedora_img() {
 debian_quick() {
   local vm_name=debvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
-  local cloud_init_iso=$vm_name.iso
-  
-  # Create VM directory.
-  echo "Creating a new directory for $vm_name."
-  mkdir $LV_IMG_DIR/$vm_name
+
+  ## Create Cloud-init directory.
+  echo "Creating a cloud-init directory for $vm_name."
+  mkdir $LV_CLD_DIR/$vm_name
 
   # Create the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_IMG_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -78,24 +79,24 @@ EOF
 
 # Creates the cloud-init.iso file.
 
-cloud-localds $LV_IMG_DIR/$vm_name/cloud-init.iso \
-$LV_IMG_DIR/$vm_name/cloud-init.cfg
+cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
+$LV_CLD_DIR/$vm_name/cloud-init.cfg
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
+  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
-  # Resize cloud image disk to 10GB.
-  echo "Resizing VM disk space to 10GB."
-  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 10G
+  # Resize cloud image disk.
+  echo "Resizing VM disk space to $QUICK_DISK_SIZE."
+  qemu-img resize $LV_IMG_DIR/$vm_name.qcow2 $QUICK_DISK_SIZE
   
   # Run the virt-install command to create the new VM.
   virt-install \
     --connect qemu:///system \
     --name $vm_name \
-    --memory 2048 \
+    --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
-    --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
+    --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -112,12 +113,12 @@ debian_custom() {
   read -p "How many vCPUs? " deb_vcpus
   read -p "How much memory (in MB)? " deb_memory
   # Create VM directory.
-  echo "Creating a new directory for $deb_vm_name."
-  mkdir $LV_IMG_DIR/$deb_vm_name
+  echo "Creating a cloud-init directory for $deb_vm_name."
+  mkdir $LV_CLD_DIR/$deb_vm_name
 
   # Create the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_IMG_DIR/$deb_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_DIR/$deb_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -131,16 +132,16 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
-  cloud-localds $LV_IMG_DIR/$deb_vm_name/cloud-init.iso \
-  $LV_IMG_DIR/$deb_vm_name/cloud-init.cfg
+  cloud-localds $LV_CLD_DIR/$deb_vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$deb_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $deb_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$deb_vm_name/$deb_vm_name.qcow2
+  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$deb_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $deb_vm_disk_size."
-  qemu-img resize $LV_IMG_DIR/$deb_vm_name/$deb_vm_name.qcow2 $deb_vm_disk_size
+  qemu-img resize $LV_IMG_DIR/$deb_vm_name.qcow2 $deb_vm_disk_size
 
   # Run the virt-install command to create the new VM.
   virt-install \
@@ -148,8 +149,8 @@ EOF
     --name $deb_vm_name \
     --memory $deb_memory \
     --vcpus=$deb_vcpus \
-    --disk /var/lib/libvirt/images/$deb_vm_name/$deb_vm_name.qcow2,device=disk,bus=virtio \
-    --disk /var/lib/libvirt/images/$deb_vm_name/cloud-init.iso,device=cdrom \
+    --disk $LV_IMG_DIR/$deb_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$deb_vm_name/cloud-init.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -163,15 +164,14 @@ EOF
 ubuntu_quick() {
   local vm_name=uvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
-  local cloud_init_iso=$vm_name.iso
   
   # Create VM directory.
-  echo "Creating a new directory for $vm_name."
-  mkdir $LV_IMG_DIR/$vm_name
+  echo "Creating a cloud-init directory for $vm_name."
+  mkdir $LV_CLD_DIR/$vm_name
 
   # Create the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_IMG_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -186,24 +186,24 @@ EOF
 
   # Creates the cloud-init.iso file.
 
-  cloud-localds $LV_IMG_DIR/$vm_name/cloud-init.iso \
-  $LV_IMG_DIR/$vm_name/cloud-init.cfg
+  cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
   cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
   
-  # Resize cloud image disk to 10GB.
-  echo "Resizing VM disk space to 10GB."
-  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 10G
+  # Resize cloud image disk.
+  echo "Resizing VM disk space."
+  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 $QUICK_DISK_SIZE
   
   # Run the virt-install command to create the new VM.
   virt-install \
     --connect qemu:///system \
     --name $vm_name \
-    --memory 2048 \
+    --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
-    --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
+    --disk $LV_IMG_DIR/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -219,13 +219,14 @@ ubuntu_custom() {
   read -p "VM disk size (in GB)? " u_vm_disk_size
   read -p "How many vCPUs? " deb_vcpus
   read -p "How much memory (in MB)? " u_memory
-  # Create VM directory.
-  echo "Creating a new directory for $u_vm_name."
-  mkdir $LV_IMG_DIR/$u_vm_name
+  
+  # Create cloud-init directory.
+  echo "Creating a cloud-init directory for $u_vm_name."
+  mkdir $LV_CLD_DIR/$u_vm_name
 
   # Create the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_IMG_DIR/$u_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_DIR/$u_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -239,16 +240,16 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
-  cloud-localds $LV_IMG_DIR/$u_vm_name/cloud-init.iso \
-  $LV_IMG_DIR/$u_vm_name/cloud-init.cfg
+  cloud-localds $LV_CLD_DIR/$u_vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $u_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name/$u_vm_name.qcow2
+  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $u_vm_disk_size."
-  qemu-img resize $LV_IMG_DIR/$u_vm_name/$u_vm_name.qcow2 $u_vm_disk_size
+  qemu-img resize $LV_IMG_DIR/$u_vm_name.qcow2 $u_vm_disk_size
 
   # Run the virt-install command to create the new VM.
   virt-install \
@@ -256,8 +257,8 @@ EOF
     --name $u_vm_name \
     --memory $u_memory \
     --vcpus=$deb_vcpus \
-    --disk /var/lib/libvirt/images/$u_vm_name/$u_vm_name.qcow2,device=disk,bus=virtio \
-    --disk /var/lib/libvirt/images/$u_vm_name/cloud-init.iso,device=cdrom \
+    --disk $LV_IMG_DIR/$u_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$u_vm_name/cloud-init.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -270,7 +271,6 @@ EOF
 fedora_quick() {
   local vm_name=fvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
-  local cloud_init_iso=$vm_name.iso
   
   # Create VM directory.
   echo "Creating a new directory for $vm_name."
@@ -299,15 +299,15 @@ EOF
   echo "Copying $vm_name.qcow2 from cloud image file."
   cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
   
-  # Resize cloud image disk to 10GB.
-  echo "Resizing VM disk space to 10GB."
-  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 10G
+  # Resize cloud image disk.
+  echo "Resizing VM disk space."
+  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 $QUICK_DISK_SIZE
   
   # Run the virt-install command to create the new VM.
   virt-install \
     --connect qemu:///system \
     --name $vm_name \
-    --memory 2048 \
+    --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
     --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
@@ -475,4 +475,9 @@ menu() {
   done  
 }
 
-menu
+# Checking for virt-install is install or not.
+if [ -e /usr/bin/virt-install ]; then
+  menu
+else
+echo "Virt-install appears to be not install. Please install virt-install and try again."
+fi
