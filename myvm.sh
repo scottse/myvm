@@ -91,8 +91,7 @@ ubuntu_quick() {
   echo "Creating a cloud-init directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
 
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
+  # Create user-data file.
   cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
@@ -107,8 +106,10 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
   cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
@@ -147,8 +148,7 @@ ubuntu_custom() {
   echo "Creating a cloud-init directory for $u_vm_name."
   mkdir $LV_CLD_DIR/$u_vm_name
 
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
+  # Create user-data file.
   cat > $LV_CLD_DIR/$u_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
@@ -163,6 +163,7 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_DIR/$u_vm_name/cloud-init.iso \
   $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
 
@@ -309,9 +310,13 @@ fedora_quick() {
   # Create VM directory.
   echo "Creating a new directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
-
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
+  
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $vm_name
+EOF
+  # Create user-data file.
   cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
@@ -319,13 +324,13 @@ system_info:
     name: $USERNAME
     home: /home/$USERNAME
 
-hostname: $vm_name
 password: $PASSWORD
 chpasswd: { expire: False }
 ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg
   
@@ -367,9 +372,13 @@ centos_quick() {
   # Create VM directory.
   echo "Creating a new directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
-
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
+  
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $vm_name
+EOF
+  # Create user-data file
   cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
@@ -377,15 +386,15 @@ system_info:
     name: $USERNAME
     home: /home/$USERNAME
 
-hostname: $vm_name
 password: $PASSWORD
 chpasswd: { expire: False }
 ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
