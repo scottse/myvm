@@ -17,48 +17,187 @@ UBUNTU_CLD_IMG='http://192.168.1.8/jammy-server-cloudimg-amd64.img'
 DEBIAN_CLD_IMG='http://192.168.1.8/debian-12-generic-amd64.qcow2'
 # Fedora 38 download link
 # FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
-FEDORA_CLD_IMG='http://192.168.1.8/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
+FEDORA_CLD_IMG='http://phobos/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
+# CentOS 9 Stream download link
+# CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
+CENTOS_CLD_IMG='http://phobos/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
 # Ubuntu File Name
 UBUNTU_FNAME='ubuntu2204-cldimg.qcow2'
 # Debian File Name
 DEBIAN_FNAME='debian-12-cldimg.qcow2'
 # Fedora File Name
 FEDORA_FNAME='fedora38-cldimg.qcow2'
+# CentOS File Name
+CENTOS_FNAME='centos-s9-cldimg.qcow2'
 
 d_ubuntu_img() {
     if [ -e $LV_IMG_DIR/$UBUNTU_FNAME ]; then
       echo "Found $(echo $UBUNTU_FNAME) in the libvirt images directory."
-      exit 1
+      # Return to main menu.
+      menu
     else
       wget -O $LV_IMG_DIR/$UBUNTU_FNAME $UBUNTU_CLD_IMG
       # qemu-img convert -f qcow2 -O qcow2 $LV_IMG_DIR/$UBUNTU_FNAME_IMG $LV_IMG_DIR/$UBUNTU_FNAME
       echo "Downloading $(echo $UBUNTU_FNAME) into the libvirt images directory."
+      # Return to main menu
+      menu
     fi
 }
+
 d_debian_img() {
     if [ -e $LV_IMG_DIR/$DEBIAN_FNAME ]; then
       echo "Found $(echo $DEBIAN_FNAME) in the libvirt images directory."
-      exit 1
+      # Return to main menu.
+      menu
     else
       wget -O $LV_IMG_DIR/$DEBIAN_FNAME $DEBIAN_CLD_IMG
       echo "Downloading $(echo $DEBIAN_FNAME) into the libvirt images directory."
+      #Return to main menu.
+      menu
     fi
 }
+
 d_fedora_img() {
     if [ -e $LV_IMG_DIR/$FEDORA_FNAME ]; then
       echo "Found $(echo $FEDORA_FNAME) in the libvirt images directory."
-      exit 1
+      # Return to main menu.
+      menu
     else
       wget -O $LV_IMG_DIR/$FEDORA_FNAME $FEDORA_CLD_IMG
       echo "Downloading $(echo $FEDORA_FNAME) into the libvirt images directory."
+      # Return to main menu
+      menu
     fi
+}
+
+d_centos_img() {
+    if [ -e $LV_IMG_DIR/$CENTOS_FNAME ]; then
+      echo "Found $(echo $CENTOS_FNAME) in the libvirt images directory."
+      # Return to main menu.
+      menu
+    else
+      wget -O $LV_IMG_DIR/$CENTOS_FNAME $CENTOS_CLD_IMG
+      echo "Downloading $(echo $CENTOS_FNAME) into the libvirt images directory."
+      # Return to main menu
+      menu
+    fi
+}
+
+ubuntu_quick() {
+  local vm_name=uvm-$(date +%y%m%d-%H%M)
+  local os_disk=$vm_name
+  
+  # Create VM directory.
+  echo "Creating a cloud-init directory for $vm_name."
+  mkdir $LV_CLD_DIR/$vm_name
+
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+hostname: $vm_name
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
+  
+  # Resize cloud image disk.
+  echo "Resizing VM disk space."
+  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 $QUICK_DISK_SIZE
+  
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $vm_name \
+    --memory $QUICK_MEM_SIZE \
+    --vcpus=1 \
+    --disk $LV_IMG_DIR/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=ubuntu-lts-latest \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  
+  # Return user back to main menu
+  menu
+}
+
+ubuntu_custom() {
+    # Asking user for specific parameters for the custom VM.
+  read -p "VM name? " u_vm_name
+  read -p "VM disk size (in GB)? " u_vm_disk_size
+  read -p "How many vCPUs? " deb_vcpus
+  read -p "How much memory (in MB)? " u_memory
+  
+  # Create cloud-init directory.
+  echo "Creating a cloud-init directory for $u_vm_name."
+  mkdir $LV_CLD_DIR/$u_vm_name
+
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_CLD_DIR/$u_vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+hostname: $deb_vm_name
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  cloud-localds $LV_CLD_DIR/$u_vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
+
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $u_vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name.qcow2
+  
+  # Resize VM disk size.
+  echo "Resizing VM disk space to $u_vm_disk_size."
+  qemu-img resize $LV_IMG_DIR/$u_vm_name.qcow2 $u_vm_disk_size
+
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $u_vm_name \
+    --memory $u_memory \
+    --vcpus=$deb_vcpus \
+    --disk $LV_IMG_DIR/$u_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$u_vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=ubuntu-lts-latest \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+
+# Return to main menu.
+  menu
 }
 
 debian_quick() {
   local vm_name=debvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
 
-  ## Create Cloud-init directory.
+  # Create Cloud-init directory.
   echo "Creating a cloud-init directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
 
@@ -78,9 +217,9 @@ ssh_pwauth: True
 EOF
 
 # Creates the cloud-init.iso file.
-
-cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
-$LV_CLD_DIR/$vm_name/cloud-init.cfg
+  cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
   cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$vm_name.qcow2
@@ -103,7 +242,8 @@ $LV_CLD_DIR/$vm_name/cloud-init.cfg
     --network network=default,model=virtio \
     --import \
     --noautoconsole
-  # Return user back to main menu
+  
+  # Return to main menu.
   menu
 }
 debian_custom() {
@@ -157,16 +297,17 @@ EOF
     --network network=default,model=virtio \
     --import \
     --noautoconsole
-  #Return user back to menu.
+
+# Return to main menu.
   menu
 }
 
-ubuntu_quick() {
-  local vm_name=uvm-$(date +%y%m%d-%H%M)
+fedora_quick() {
+  local vm_name=fvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
   
   # Create VM directory.
-  echo "Creating a cloud-init directory for $vm_name."
+  echo "Creating a new directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
 
   # Create the cloud-init.iso file.
@@ -178,23 +319,23 @@ system_info:
     name: $USERNAME
     home: /home/$USERNAME
 
+hostname: $vm_name
 password: $PASSWORD
 chpasswd: { expire: False }
-hostname: $vm_name
 ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
-
   cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
+  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
   # Resize cloud image disk.
   echo "Resizing VM disk space."
-  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 $QUICK_DISK_SIZE
+  qemu-img resize $LV_IMG_DIR/$vm_name.qcow2 $QUICK_DISK_SIZE
   
   # Run the virt-install command to create the new VM.
   virt-install \
@@ -202,128 +343,81 @@ EOF
     --name $vm_name \
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
-    --disk $LV_IMG_DIR/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
     --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
-    --os-variant=ubuntu-lts-latest \
-    --virt-type kvm \
-    --graphics vnc \
-    --network network=default,model=virtio \
-    --import \
-    --noautoconsole
-  # Return user back to main menu
-  menu
-}
-ubuntu_custom() {
-    # Asking user for specific parameters for the custom VM.
-  read -p "VM name? " u_vm_name
-  read -p "VM disk size (in GB)? " u_vm_disk_size
-  read -p "How many vCPUs? " deb_vcpus
-  read -p "How much memory (in MB)? " u_memory
-  
-  # Create cloud-init directory.
-  echo "Creating a cloud-init directory for $u_vm_name."
-  mkdir $LV_CLD_DIR/$u_vm_name
-
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
-  cat > $LV_CLD_DIR/$u_vm_name/cloud-init.cfg << EOF
-#cloud-config
-system_info:
-  default_user:
-    name: $USERNAME
-    home: /home/$USERNAME
-
-password: $PASSWORD
-chpasswd: { expire: False }
-hostname: $deb_vm_name
-ssh_pwauth: True
-EOF
-
-  # Creates the cloud-init.iso file.
-  cloud-localds $LV_CLD_DIR/$u_vm_name/cloud-init.iso \
-  $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
-
-  # Copy the cloud image and rename it to the VM name.
-  echo "Copying $u_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name.qcow2
-  
-  # Resize VM disk size.
-  echo "Resizing VM disk space to $u_vm_disk_size."
-  qemu-img resize $LV_IMG_DIR/$u_vm_name.qcow2 $u_vm_disk_size
-
-  # Run the virt-install command to create the new VM.
-  virt-install \
-    --connect qemu:///system \
-    --name $u_vm_name \
-    --memory $u_memory \
-    --vcpus=$deb_vcpus \
-    --disk $LV_IMG_DIR/$u_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD_DIR/$u_vm_name/cloud-init.iso,device=cdrom \
-    --os-variant=ubuntu-lts-latest \
-    --virt-type kvm \
-    --graphics vnc \
-    --network network=default,model=virtio \
-    --import \
-    --noautoconsole
-  #Return user back to menu.
-  menu
-}
-fedora_quick() {
-  local vm_name=fvm-$(date +%y%m%d-%H%M)
-  local os_disk=$vm_name
-  
-  # Create VM directory.
-  echo "Creating a new directory for $vm_name."
-  mkdir $LV_IMG_DIR/$vm_name
-
-  # Create the cloud-init.iso file.
-  echo "Creating the cloud-init iso file."
-  cat > $LV_IMG_DIR/$vm_name/cloud-init.cfg << EOF
-#cloud-config
-system_info:
-  default_user:
-    name: $USERNAME
-    home: /home/$USERNAME
-
-password: $PASSWORD
-chpasswd: { expire: False }
-ssh_pwauth: True
-
-EOF
-
-  # Creates the cloud-init.iso file.
-
-  cloud-localds $LV_IMG_DIR/$vm_name/cloud-init.iso \
-  $LV_IMG_DIR/$vm_name/cloud-init.cfg
-  # Copy the cloud image and rename it to the VM name.
-  echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name/$vm_name.qcow2
-  
-  # Resize cloud image disk.
-  echo "Resizing VM disk space."
-  qemu-img resize $LV_IMG_DIR/$vm_name/$vm_name.qcow2 $QUICK_DISK_SIZE
-  
-  # Run the virt-install command to create the new VM.
-  virt-install \
-    --connect qemu:///system \
-    --name $vm_name \
-    --memory $QUICK_MEM_SIZE \
-    --vcpus=1 \
-    --disk /var/lib/libvirt/images/$vm_name/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk /var/lib/libvirt/images/$vm_name/cloud-init.iso,device=cdrom \
     --os-variant=fedora38 \
     --virt-type kvm \
     --graphics vnc \
     --network network=default,model=virtio \
     --import \
     --noautoconsole
-  # Return user back to main menu
+
+  # Return to main menu.
   menu
 }
 
 fedora_custom() {
   echo
 }
+
+centos_quick() {
+  local vm_name=cvm-$(date +%y%m%d-%H%M)
+  local os_disk=$vm_name
+  
+  # Create VM directory.
+  echo "Creating a new directory for $vm_name."
+  mkdir $LV_CLD_DIR/$vm_name
+
+  # Create the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+hostname: $vm_name
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  cloud-localds $LV_CLD_DIR/$vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  
+  # Resize cloud image disk.
+  echo "Resizing VM disk space."
+  qemu-img resize $LV_IMG_DIR/$vm_name.qcow2 $QUICK_DISK_SIZE
+  
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $vm_name \
+    --memory $QUICK_MEM_SIZE \
+    --vcpus=1 \
+    --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=fedora38 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  # Return to main menu.
+  menu
+
+}
+
+centos_custom() {
+  echo
+}
+
 sub_download() {
   echo
   echo "======================================================"
@@ -334,7 +428,7 @@ sub_download() {
   echo "======================================================"
   echo
   local PS3="Please select an option below: "
-  local options=("Debian" "Ubuntu" "Fedora" "All" "Main")
+  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "All" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -343,11 +437,14 @@ sub_download() {
       "Ubuntu")
         d_ubuntu_img ;;
       "Fedora")
-        d_ubuntu_img ;;
+        d_fedora_img ;;
+      "CentOS")
+        d_centos_img ;;
       "All")
         d_debian_img
         d_ubuntu_img
         d_fedora_img
+        d_centos_img
         ;;
       "Main")
        echo "Return to main menu"
@@ -357,12 +454,12 @@ sub_download() {
     esac
   done
 }
+
 sub_debian() {
   echo
   echo "======================================================="
-  echo "= The quick option creates a VM with 2GB of memory,   ="
-  echo "= 10GB VM disk, and uses predefined usernames,        ="
-  echo "= passwords, and hostname.                            ="
+  echo "= The quick option creates a VM with predefined       =" 
+  echo "= variables.                                          ="
   echo "=                                                     ="
   echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
@@ -385,12 +482,12 @@ sub_debian() {
     esac
   done
 }
+
 sub_ubuntu() {
   echo
   echo "======================================================="
-  echo "= The quick option creates a VM with 2GB of memory,   ="
-  echo "= 10GB VM disk, and uses predefined usernames,        ="
-  echo "= passwords, and hostname.                            ="
+  echo "= The quick option creates a VM with predefined       =" 
+  echo "= variables.                                          ="
   echo "=                                                     ="
   echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
@@ -413,12 +510,12 @@ sub_ubuntu() {
     esac
   done
 }
+
 sub_fedora() {
   echo
   echo "======================================================="
-  echo "= The quick option creates a VM with 2GB of memory,   ="
-  echo "= 10GB VM disk, and uses predefined usernames,        ="
-  echo "= passwords, and hostname.                            ="
+  echo "= The quick option creates a VM with predefined       =" 
+  echo "= variables.                                          ="
   echo "=                                                     ="
   echo "= The custom option creates a VM with user specified  ="
   echo "= options.                                            ="
@@ -442,6 +539,34 @@ sub_fedora() {
   done
 }
 
+sub_centos() {
+  echo
+  echo "======================================================="
+  echo "= The quick option creates a VM with predefined       =" 
+  echo "= variables.                                          ="
+  echo "=                                                     ="
+  echo "= The custom option creates a VM with user specified  ="
+  echo "= options.                                            ="
+  echo "======================================================="
+  echo
+  local PS3="Please select an option below: "
+  local options=("Quick" "Custom" "Main")
+  local opt
+  select opt in "${options[@]}"; do
+    case $opt in
+      "Quick")
+        centos_quick ;;
+      "Custom")
+        centos_custom ;;
+      "Main")
+       echo "Return to main menu"
+       menu
+       ;;
+      *) echo "Invalid option, please try again." ;;
+    esac
+  done
+}
+
 menu() {
   echo
   echo "=============================================================="
@@ -453,7 +578,7 @@ menu() {
   echo "=============================================================="
   echo
   PS3='Please select an option: '
-  options=("Download" "Ubuntu" "Debian" "Fedora" "Help" "Quit")
+  options=("Download" "Ubuntu" "Debian" "Fedora" "CentOS" "Help" "Quit")
   select opt in "${options[@]}"; do
     case $opt in
       "Download")
@@ -464,6 +589,8 @@ menu() {
         sub_debian ;;
       "Fedora")
         sub_fedora ;;
+      "CentOS")
+        sub_centos ;;
       "Help")
         help_func ;;
       "Quit")
