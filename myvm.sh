@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Username and hashed password for VMs
+LV_CONN=
 USERNAME='test'
 PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSwm0pieDPPHHmXQaW8LR.L58xFK5TRIAwNyZS1'
 #Disk size for quick VMs
@@ -87,7 +88,7 @@ ubuntu_quick() {
   local vm_name=uvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
   
-  # Create VM directory.
+  # Create cloud-init directory.
   echo "Creating a cloud-init directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
 
@@ -139,9 +140,16 @@ EOF
 
 ubuntu_custom() {
     # Asking user for specific parameters for the custom VM.
-  read -p "VM name? " u_vm_name
+  while :; do
+    read -p "VM name? " u_vm_name
+    if [ -e $LV_IMG_DIR/$u_vm_name.qcow2 ]; then
+      echo "The VM name $u_vm_name already exists. Please choose a new name."
+    else
+      break
+    fi
+  done
   read -p "VM disk size (in GB)? " u_vm_disk_size
-  read -p "How many vCPUs? " deb_vcpus
+  read -p "How many vCPUs? " u_vcpus
   read -p "How much memory (in MB)? " u_memory
   
   # Create cloud-init directory.
@@ -180,7 +188,7 @@ EOF
     --connect qemu:///system \
     --name $u_vm_name \
     --memory $u_memory \
-    --vcpus=$deb_vcpus \
+    --vcpus=$u_vcpus \
     --disk $LV_IMG_DIR/$u_vm_name.qcow2,device=disk,bus=virtio \
     --disk $LV_CLD_DIR/$u_vm_name/cloud-init.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
@@ -249,11 +257,19 @@ EOF
 }
 debian_custom() {
   # Asking user for specific parameters for the custom VM.
-  read -p "VM name? " deb_vm_name
+  while :; do
+    read -p "VM name? " deb_vm_name
+    if [ -e $LV_IMG_DIR/$deb_vm_name.qcow2 ]; then
+      echo "The VM name $deb_vm_name already exists. Please choose a new name."
+    else
+      break
+    fi
+  done
   read -p "VM disk size (in GB)? " deb_vm_disk_size
   read -p "How many vCPUs? " deb_vcpus
   read -p "How much memory (in MB)? " deb_memory
-  # Create VM directory.
+ 
+  # Create cloud-init directory.
   echo "Creating a cloud-init directory for $deb_vm_name."
   mkdir $LV_CLD_DIR/$deb_vm_name
 
@@ -307,7 +323,7 @@ fedora_quick() {
   local vm_name=fvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
   
-  # Create VM directory.
+  # Create cloud-init directory.
   echo "Creating a new directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
   
@@ -362,14 +378,78 @@ EOF
 }
 
 fedora_custom() {
-  echo
+  # Asking user for specific parameters for the custom VM.
+  while :; do
+    read -p "VM name? " f_vm_name
+    if [ -e $LV_IMG_DIR/$f_vm_name.qcow2 ]; then
+      echo "The VM name $f_vm_name already exists. Please choose a new name."
+    else
+      break
+    fi
+  done
+  read -p "VM disk size (in GB)? " f_vm_disk_size
+  read -p "How many vCPUs? " f_vcpus
+  read -p "How much memory (in MB)? " f_memory
+
+  # Create cloud-init directory.
+  echo "Creating a cloud-init directory for $f_vm_name."
+  mkdir $LV_CLD_DIR/$f_vm_name
+
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$f_vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $f_vm_name
+EOF
+  # Create user-data file.
+  cat > $LV_CLD_DIR/$f_vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cloud-localds $LV_CLD_DIR/$f_vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$f_vm_name/cloud-init.cfg $LV_CLD_DIR/$f_vm_name/meta-data.cfg
+
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $f_vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$f_vm_name.qcow2
+  
+  # Resize VM disk size.
+  echo "Resizing VM disk space to $f_vm_disk_size."
+  qemu-img resize $LV_IMG_DIR/$f_vm_name.qcow2 $f_vm_disk_size
+
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $f_vm_name \
+    --memory $f_memory \
+    --vcpus=$f_vcpus \
+    --disk $LV_IMG_DIR/$f_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$f_vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=fedora38 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+
+# Return to main menu.
+  menu
 }
 
 centos_quick() {
   local vm_name=cvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
   
-  # Create VM directory.
+  # Create cloud-init directory.
   echo "Creating a new directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
   
@@ -412,7 +492,7 @@ EOF
     --vcpus=1 \
     --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
     --disk $LV_CLD_DIR/$vm_name/cloud-init.iso,device=cdrom \
-    --os-variant=fedora38 \
+    --os-variant=centos-stream9 \
     --virt-type kvm \
     --graphics vnc \
     --network network=default,model=virtio \
@@ -424,7 +504,71 @@ EOF
 }
 
 centos_custom() {
-  echo
+  # Asking user for specific parameters for the custom VM.
+  while :; do
+    read -p "VM name? " c_vm_name
+    if [ -e $LV_IMG_DIR/$c_vm_name.qcow2 ]; then
+      echo "The VM name $c_vm_name already exists. Please choose a new name."
+    else
+      break
+    fi
+  done
+  read -p "VM disk size (in GB)? " c_vm_disk_size
+  read -p "How many vCPUs? " c_vcpus
+  read -p "How much memory (in MB)? " c_memory
+
+  # Create cloud-init directory.
+  echo "Creating a cloud-init directory for $c_vm_name."
+  mkdir $LV_CLD_DIR/$c_vm_name
+
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$c_vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $c_vm_name
+EOF
+  # Create user-data file.
+  cat > $LV_CLD_DIR/$c_vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cloud-localds $LV_CLD_DIR/$c_vm_name/cloud-init.iso \
+  $LV_CLD_DIR/$c_vm_name/cloud-init.cfg $LV_CLD_DIR/$c_vm_name/meta-data.cfg
+
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $c_vm_name.qcow2 from cloud image file."
+  cp $LV_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$c_vm_name.qcow2
+  
+  # Resize VM disk size.
+  echo "Resizing VM disk space to $c_vm_disk_size."
+  qemu-img resize $LV_IMG_DIR/$c_vm_name.qcow2 $c_vm_disk_size
+
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $c_vm_name \
+    --memory $c_memory \
+    --vcpus=$c_vcpus \
+    --disk $LV_IMG_DIR/$c_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_DIR/$c_vm_name/cloud-init.iso,device=cdrom \
+    --os-variant=centos-stream9 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+
+# Return to main menu.
+  menu
 }
 
 sub_download() {
