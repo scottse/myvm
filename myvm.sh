@@ -1,9 +1,11 @@
 #!/usr/bin/env bash
 
 # Username and hashed password for VMs
-LV_CONN=
+LV_CONN=""
 USERNAME='test'
 PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSwm0pieDPPHHmXQaW8LR.L58xFK5TRIAwNyZS1'
+# SSH Public key
+SSH_PUB_KEY=""
 #Disk size for quick VMs
 QUICK_DISK_SIZE=10G
 QUICK_MEM_SIZE=2048
@@ -22,6 +24,9 @@ FEDORA_CLD_IMG='http://phobos/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
 # CentOS 9 Stream download link
 # CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
 CENTOS_CLD_IMG='http://phobos/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
+# OpenSuse Leap download link
+#OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
+OPENSUSE_CLD_IMG="http://192.168.1.8/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
 # Ubuntu File Name
 UBUNTU_FNAME='ubuntu2204-cldimg.qcow2'
 # Debian File Name
@@ -30,6 +35,8 @@ DEBIAN_FNAME='debian-12-cldimg.qcow2'
 FEDORA_FNAME='fedora38-cldimg.qcow2'
 # CentOS File Name
 CENTOS_FNAME='centos-s9-cldimg.qcow2'
+# OpenSUSE File Name
+OPENSUSE_FNAME="openSUSE-Leap-15.3-cldimg.qcow2"
 
 d_ubuntu_img() {
     if [ -e $LV_IMG_DIR/$UBUNTU_FNAME ]; then
@@ -84,6 +91,18 @@ d_centos_img() {
     fi
 }
 
+d_opensuse_img() {
+    if [ -e $LV_IMG_DIR/$OPENSUSE_FNAME ]; then
+      echo "Found $(echo $OPENSUSE_FNAME) in the libvirt images directory."
+      # Return to main menu.
+      menu
+    else
+      wget -O $LV_IMG_DIR/$OPENSUSE_FNAME $OPENSUSE_CLD_IMG
+      echo "Downloading $(echo $OPENSUSE_FNAME) into the libvirt images directory."
+      # Return to main menu
+      menu
+    fi
+}
 ubuntu_quick() {
   local vm_name=uvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
@@ -581,7 +600,7 @@ sub_download() {
   echo "======================================================"
   echo
   local PS3="Please select an option below: "
-  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "All" "Main")
+  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "openSUSE" "All" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -593,11 +612,14 @@ sub_download() {
         d_fedora_img ;;
       "CentOS")
         d_centos_img ;;
+      "openSUSE")
+        d_opensuse_img ;;
       "All")
         d_debian_img
         d_ubuntu_img
         d_fedora_img
         d_centos_img
+        d_opensuse_img
         ;;
       "Main")
        echo "Return to main menu"
