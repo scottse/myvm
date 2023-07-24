@@ -5,8 +5,8 @@ LV_CONN=""
 USERNAME='test'
 PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSwm0pieDPPHHmXQaW8LR.L58xFK5TRIAwNyZS1'
 # SSH Public key
-SSH_PUB_KEY=""
-#Disk size for quick VMs
+SSH_PUB_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCiboxxQ3WcuMoDXgokHCJgYbkC15YJiheiZ9nQjH42UhKbrG9os7g5Tv5kWlOxUa8J+HOBX8jpMxN+FcC/xzGca0IpUt2K+b9H9LlDkfL/WUmErGvBH3IN6xTE3ZgrCn6QqZ5pHG4JxT1BRo2KkMvyb71pysnz49kb+aeI/JJRB37wFbEY3IqtaQmRoHHagigiS/+eX9gjX+Sv60lxqrLEZ3MNE/sSiwaMJnLbRoRHpmUGvwjLwLBtQLThpJ/2sUHv3ND/11GbDvNmemVgukEUq9HPs7pN0DQhBLlYQa3LO4/LyZB6gcpCtQ5eh9l78+bbzSVgqro071A3OMxpsclaeXb6dJQ2LxdCDsz9qo//x7FqnIPQON8BR4k2uvaqVXjlXMDhG0kMlQldpqRlOQ2Jm5BrlmMP2zickFdM6jG0ZOIFrfFLpTPVavn3VXEZbcYFd64EGqGw105QzYNrgEB16NjMEZbpbfViklpRrF2ukAuYEjGi5zBY1El8zpNUbXs= scott@gaia.local"
+# Disk size for quick VMs
 QUICK_DISK_SIZE=10G
 QUICK_MEM_SIZE=2048
 # Libvirt VM images storage
@@ -103,10 +103,11 @@ d_opensuse_img() {
       menu
     fi
 }
+
 ubuntu_quick() {
   local vm_name=uvm-$(date +%y%m%d-%H%M)
   local os_disk=$vm_name
-  
+
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $vm_name."
   mkdir $LV_CLD_DIR/$vm_name
@@ -144,7 +145,7 @@ EOF
     --name $vm_name \
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
-    --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_IMG_DIR/$vm_name.qcow2,device=disk,bus=virtio \
     --disk $LV_IMG_DIR/$vm_name.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
