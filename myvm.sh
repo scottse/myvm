@@ -8,9 +8,15 @@ PASSWORD='$6$.IwGrSRYcDlf1WK6$nf/jh8z2OJT30gzL.ey1.uPjnn1YFlebFP7aVrUxWjlc0mHQSw
 SSH_PUB_KEY="ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCiboxxQ3WcuMoDXgokHCJgYbkC15YJiheiZ9nQjH42UhKbrG9os7g5Tv5kWlOxUa8J+HOBX8jpMxN+FcC/xzGca0IpUt2K+b9H9LlDkfL/WUmErGvBH3IN6xTE3ZgrCn6QqZ5pHG4JxT1BRo2KkMvyb71pysnz49kb+aeI/JJRB37wFbEY3IqtaQmRoHHagigiS/+eX9gjX+Sv60lxqrLEZ3MNE/sSiwaMJnLbRoRHpmUGvwjLwLBtQLThpJ/2sUHv3ND/11GbDvNmemVgukEUq9HPs7pN0DQhBLlYQa3LO4/LyZB6gcpCtQ5eh9l78+bbzSVgqro071A3OMxpsclaeXb6dJQ2LxdCDsz9qo//x7FqnIPQON8BR4k2uvaqVXjlXMDhG0kMlQldpqRlOQ2Jm5BrlmMP2zickFdM6jG0ZOIFrfFLpTPVavn3VXEZbcYFd64EGqGw105QzYNrgEB16NjMEZbpbfViklpRrF2ukAuYEjGi5zBY1El8zpNUbXs= scott@gaia.local"
 # Disk size for quick VMs
 QUICK_DISK_SIZE=10G
+# Memory size for quick VMs
 QUICK_MEM_SIZE=2048
 # Libvirt VM images storage
 LV_IMG_DIR='/var/lib/libvirt/images'
+# Where the cloud-init config iso is stored.
+LV_CLD_INIT_ISO_DIR='/var/lib/libvirt/cloud-init-iso'
+# Where the Linux cloud images are stored.
+LV_CLD_IMG_DIR="/var/lib/libvirt/cloud-images"
+# Where the cloud-init config files are stored.
 LV_CLD_DIR='/var/lib/libvirt/cloud-init'
 # Ubuntu 22.04 download link
 # UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
@@ -39,12 +45,12 @@ CENTOS_FNAME='centos-s9-cldimg.qcow2'
 OPENSUSE_FNAME="openSUSE-Leap-15.3-cldimg.qcow2"
 
 d_ubuntu_img() {
-    if [ -e $LV_IMG_DIR/$UBUNTU_FNAME ]; then
+    if [ -e $LV_CLD_IMG_DIR/$UBUNTU_FNAME ]; then
       echo "Found $(echo $UBUNTU_FNAME) in the libvirt images directory."
       # Return to main menu.
       menu
     else
-      wget -O $LV_IMG_DIR/$UBUNTU_FNAME $UBUNTU_CLD_IMG
+      wget -O $LV_CLD_IMG_DIR/$UBUNTU_FNAME $UBUNTU_CLD_IMG
       # qemu-img convert -f qcow2 -O qcow2 $LV_IMG_DIR/$UBUNTU_FNAME_IMG $LV_IMG_DIR/$UBUNTU_FNAME
       echo "Downloading $(echo $UBUNTU_FNAME) into the libvirt images directory."
       # Return to main menu
@@ -53,12 +59,12 @@ d_ubuntu_img() {
 }
 
 d_debian_img() {
-    if [ -e $LV_IMG_DIR/$DEBIAN_FNAME ]; then
+    if [ -e $LV_CLD_IMG_DIR/$DEBIAN_FNAME ]; then
       echo "Found $(echo $DEBIAN_FNAME) in the libvirt images directory."
       # Return to main menu.
       menu
     else
-      wget -O $LV_IMG_DIR/$DEBIAN_FNAME $DEBIAN_CLD_IMG
+      wget -O $LV_CLD_IMG_DIR/$DEBIAN_FNAME $DEBIAN_CLD_IMG
       echo "Downloading $(echo $DEBIAN_FNAME) into the libvirt images directory."
       #Return to main menu.
       menu
@@ -66,12 +72,12 @@ d_debian_img() {
 }
 
 d_fedora_img() {
-    if [ -e $LV_IMG_DIR/$FEDORA_FNAME ]; then
+    if [ -e $LV_CLD_IMG_DIR/$FEDORA_FNAME ]; then
       echo "Found $(echo $FEDORA_FNAME) in the libvirt images directory."
       # Return to main menu.
       menu
     else
-      wget -O $LV_IMG_DIR/$FEDORA_FNAME $FEDORA_CLD_IMG
+      wget -O $LV_CLD_IMG_DIR/$FEDORA_FNAME $FEDORA_CLD_IMG
       echo "Downloading $(echo $FEDORA_FNAME) into the libvirt images directory."
       # Return to main menu
       menu
@@ -79,12 +85,12 @@ d_fedora_img() {
 }
 
 d_centos_img() {
-    if [ -e $LV_IMG_DIR/$CENTOS_FNAME ]; then
+    if [ -e $LV_CLD_IMG_DIR/$CENTOS_FNAME ]; then
       echo "Found $(echo $CENTOS_FNAME) in the libvirt images directory."
       # Return to main menu.
       menu
     else
-      wget -O $LV_IMG_DIR/$CENTOS_FNAME $CENTOS_CLD_IMG
+      wget -O $LV_CLD_IMG_DIR/$CENTOS_FNAME $CENTOS_CLD_IMG
       echo "Downloading $(echo $CENTOS_FNAME) into the libvirt images directory."
       # Return to main menu
       menu
@@ -92,12 +98,12 @@ d_centos_img() {
 }
 
 d_opensuse_img() {
-    if [ -e $LV_IMG_DIR/$OPENSUSE_FNAME ]; then
+    if [ -e $LV_CLD_IMG_DIR/$OPENSUSE_FNAME ]; then
       echo "Found $(echo $OPENSUSE_FNAME) in the libvirt images directory."
       # Return to main menu.
       menu
     else
-      wget -O $LV_IMG_DIR/$OPENSUSE_FNAME $OPENSUSE_CLD_IMG
+      wget -O $LV_CLD_IMG_DIR/$OPENSUSE_FNAME $OPENSUSE_CLD_IMG
       echo "Downloading $(echo $OPENSUSE_FNAME) into the libvirt images directory."
       # Return to main menu
       menu
@@ -128,12 +134,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
   # Resize cloud image disk.
   echo "Resizing VM disk space."
@@ -146,7 +152,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG_DIR/$vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$vm_name.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -192,12 +198,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$u_vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$u_vm_name.iso \
   $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $u_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$UBUNTU_FNAME $LV_IMG_DIR/$u_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $u_vm_disk_size."
@@ -210,7 +216,7 @@ EOF
     --memory $u_memory \
     --vcpus=$u_vcpus \
     --disk $LV_IMG_DIR/$u_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$u_vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$u_vm_name.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -246,12 +252,12 @@ ssh_pwauth: True
 EOF
 
 # Creates the cloud-init.iso file.
-  cloud-localds $LV_IMG_DIR/$vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
   # Resize cloud image disk.
   echo "Resizing VM disk space to $QUICK_DISK_SIZE."
@@ -264,7 +270,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$vm_name.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -309,12 +315,12 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
-  cloud-localds $LV_IMG_DIR/$deb_vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$deb_vm_name.iso \
   $LV_CLD_DIR/$deb_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $deb_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$deb_vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$DEBIAN_FNAME $LV_IMG_DIR/$deb_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $deb_vm_disk_size."
@@ -327,7 +333,7 @@ EOF
     --memory $deb_memory \
     --vcpus=$deb_vcpus \
     --disk $LV_IMG_DIR/$deb_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$deb_vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$deb_vm_name.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -367,12 +373,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
   # Resize cloud image disk.
   echo "Resizing VM disk space."
@@ -385,7 +391,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$vm_name.iso,device=cdrom \
     --os-variant=fedora38 \
     --virt-type kvm \
     --graphics vnc \
@@ -435,12 +441,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$f_vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$f_vm_name.iso \
   $LV_CLD_DIR/$f_vm_name/cloud-init.cfg $LV_CLD_DIR/$f_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $f_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$f_vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$FEDORA_FNAME $LV_IMG_DIR/$f_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $f_vm_disk_size."
@@ -453,7 +459,7 @@ EOF
     --memory $f_memory \
     --vcpus=$f_vcpus \
     --disk $LV_IMG_DIR/$f_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$f_vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$f_vm_name.iso,device=cdrom \
     --os-variant=fedora38 \
     --virt-type kvm \
     --graphics vnc \
@@ -493,12 +499,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
   $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$vm_name.qcow2
   
   # Resize cloud image disk.
   echo "Resizing VM disk space."
@@ -511,7 +517,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$vm_name.iso,device=cdrom \
     --os-variant=centos-stream9 \
     --virt-type kvm \
     --graphics vnc \
@@ -561,12 +567,12 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_IMG_DIR/$c_vm_name.iso \
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$c_vm_name.iso \
   $LV_CLD_DIR/$c_vm_name/cloud-init.cfg $LV_CLD_DIR/$c_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $c_vm_name.qcow2 from cloud image file."
-  cp $LV_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$c_vm_name.qcow2
+  cp $LV_CLD_IMG_DIR/$CENTOS_FNAME $LV_IMG_DIR/$c_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $c_vm_disk_size."
@@ -579,7 +585,7 @@ EOF
     --memory $c_memory \
     --vcpus=$c_vcpus \
     --disk $LV_IMG_DIR/$c_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_IMG_DIR/$c_vm_name.iso,device=cdrom \
+    --disk $LV_CLD_INIT_ISO_DIR/$c_vm_name.iso,device=cdrom \
     --os-variant=centos-stream9 \
     --virt-type kvm \
     --graphics vnc \
