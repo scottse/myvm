@@ -598,16 +598,16 @@ EOF
 }
 
 sub_download() {
+  clear
+  echo " ==Download Options== "
+  echo 
+  echo " The cloud image needs to be downloaded before a VM "
+  echo " can be created. Please download the cloud image    "
+  echo " for either Debian, Ubuntu, Fedora or download all  "
+  echo " of the cloud images from each distro.              "
   echo
-  echo "======================================================"
-  echo "= The cloud image needs to be downloaded before a VM ="
-  echo "= can be created. Please download the cloud image    ="
-  echo "= for either Debian, Ubuntu, Fedora or download all  ="
-  echo "= of the cloud images from each distro.              ="
-  echo "======================================================"
-  echo
-  local PS3="Please select an option below: "
-  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "openSUSE" "All" "Main")
+  local PS3="Please select an option: "
+  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "openSUSE" "Main")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -620,12 +620,6 @@ sub_download() {
       "CentOS")
         d_centos_img ;;
       "openSUSE")
-        d_opensuse_img ;;
-      "All")
-        d_debian_img
-        d_ubuntu_img
-        d_fedora_img
-        d_centos_img
         d_opensuse_img
         ;;
       "Main")
@@ -666,17 +660,17 @@ sub_debian() {
 }
 
 sub_ubuntu() {
+  clear
+  echo " ==Ubuntu Options== "
   echo
-  echo "======================================================="
-  echo "= The quick option creates a VM with predefined       =" 
-  echo "= variables.                                          ="
-  echo "=                                                     ="
-  echo "= The custom option creates a VM with user specified  ="
-  echo "= options.                                            ="
-  echo "======================================================="
+  echo " The quick option creates a VM with predefined" 
+  echo " variables."
   echo
-  local PS3="Please select an option below: "
-  local options=("Quick" "Custom" "Main")
+  echo " The custom option creates a VM with user specified"
+  echo " options."
+  echo
+  local PS3="Please select an option: "
+  local options=("Quick" "Custom" "Main Menu")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -684,7 +678,7 @@ sub_ubuntu() {
         ubuntu_quick ;;
       "Custom")
         ubuntu_custom ;;
-      "Main")
+      "Main Menu")
        echo "Return to main menu"
        menu
        ;;
