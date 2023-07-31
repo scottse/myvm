@@ -597,7 +597,134 @@ EOF
   menu
 }
 
+opensuse_quick() {
+  local vm_name=ovm-$(date +%y%m%d-%H%M)
+  local os_disk=$vm_name
+  
+  # Create cloud-init directory.
+  echo "Creating a new directory for $vm_name."
+  mkdir $LV_CLD_DIR/$vm_name
+  
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $vm_name
+EOF
+  # Create user-data file
+  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
+  $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg 
+  
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $vm_name.qcow2 from cloud image file."
+  cp $LV_CLD_IMG_DIR/$OPENSUSE_FNAME $LV_IMG_DIR/$vm_name.qcow2
+  
+  # Resize cloud image disk.
+  echo "Resizing VM disk space."
+  qemu-img resize $LV_IMG_DIR/$vm_name.qcow2 $QUICK_DISK_SIZE
+  
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $vm_name \
+    --memory $QUICK_MEM_SIZE \
+    --vcpus=1 \
+    --disk $LV_IMG_DIR/$os_disk.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_INIT_ISO_DIR/$vm_name.iso,device=cdrom \
+    --os-variant=opensuse15.4 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+  # Return to main menu.
+  menu
+
+}
+
+opensuse_custom() {
+  # Asking user for specific parameters for the custom VM.
+  while :; do
+    read -p "VM name? " o_vm_name
+    if [ -e $LV_IMG_DIR/$o_vm_name.qcow2 ]; then
+      echo "The VM name $o_vm_name already exists. Please choose a new name."
+    else
+      break
+    fi
+  done
+  read -p "VM disk size (in GB)? " o_vm_disk_size
+  read -p "How many vCPUs? " o_vcpus
+  read -p "How much memory (in MB)? " o_memory
+
+  # Create cloud-init directory.
+  echo "Creating a cloud-init directory for $o_vm_name."
+  mkdir $LV_CLD_DIR/$o_vm_name
+
+  # Create meta-data file.
+  cat > $LV_CLD_DIR/$o_vm_name/meta-data.cfg << EOF
+#cloud-config
+local-hostname: $o_vm_name
+EOF
+  # Create user-data file.
+  cat > $LV_CLD_DIR/$o_vm_name/cloud-init.cfg << EOF
+#cloud-config
+system_info:
+  default_user:
+    name: $USERNAME
+    home: /home/$USERNAME
+
+password: $PASSWORD
+chpasswd: { expire: False }
+ssh_pwauth: True
+EOF
+
+  # Creates the cloud-init.iso file.
+  echo "Creating the cloud-init iso file."
+  cloud-localds $LV_CLD_INIT_ISO_DIR/$o_vm_name.iso \
+  $LV_CLD_DIR/$o_vm_name/cloud-init.cfg $LV_CLD_DIR/$o_vm_name/meta-data.cfg
+
+  # Copy the cloud image and rename it to the VM name.
+  echo "Copying $o_vm_name.qcow2 from cloud image file."
+  cp $LV_CLD_IMG_DIR/$OPENSUSE_FNAME $LV_IMG_DIR/$o_vm_name.qcow2
+  
+  # Resize VM disk size.
+  echo "Resizing VM disk space to $o_vm_disk_size."
+  qemu-img resize $LV_IMG_DIR/$o_vm_name.qcow2 $o_vm_disk_size
+
+  # Run the virt-install command to create the new VM.
+  virt-install \
+    --connect qemu:///system \
+    --name $o_vm_name \
+    --memory $o_memory \
+    --vcpus=$c_vcpus \
+    --disk $LV_IMG_DIR/$o_vm_name.qcow2,device=disk,bus=virtio \
+    --disk $LV_CLD_INIT_ISO_DIR/$o_vm_name.iso,device=cdrom \
+    --os-variant=opensuse15.4 \
+    --virt-type kvm \
+    --graphics vnc \
+    --network network=default,model=virtio \
+    --import \
+    --noautoconsole
+
+# Return to main menu.
+  menu
+}
+
 sub_download() {
+  # Clear the screen from pervious menu
   clear
   echo " ==Download Options== "
   echo 
@@ -607,7 +734,7 @@ sub_download() {
   echo " of the cloud images from each distro.              "
   echo
   local PS3="Please select an option: "
-  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "openSUSE" "Main")
+  local options=("Debian" "Ubuntu" "Fedora" "CentOS" "openSUSE" "Main Menu")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -622,8 +749,9 @@ sub_download() {
       "openSUSE")
         d_opensuse_img
         ;;
-      "Main")
+      "Main Menu")
        echo "Return to main menu"
+       clear
        menu
        ;;
       *) echo "Invalid option, please try again." ;;
@@ -632,17 +760,18 @@ sub_download() {
 }
 
 sub_debian() {
+  # Clear the screen from pervious menu
+  clear
+  echo " ==Debian Options=="
   echo
-  echo "======================================================="
-  echo "= The quick option creates a VM with predefined       =" 
-  echo "= variables.                                          ="
-  echo "=                                                     ="
-  echo "= The custom option creates a VM with user specified  ="
-  echo "= options.                                            ="
-  echo "======================================================="
+  echo " The quick option creates a VM with predefined" 
+  echo " variables."
+  echo
+  echo " The custom option creates a VM with user specified"
+  echo " options."
   echo
   local PS3="Please select an option below: "
-  local options=("Quick" "Custom" "Main")
+  local options=("Quick" "Custom" "Main Menu")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -650,8 +779,9 @@ sub_debian() {
         debian_quick ;;
       "Custom")
         debian_custom ;;
-      "Main")
+      "Main Menu")
        echo "Return to main menu"
+       clear
        menu
        ;;
       *) echo "Invalid option, please try again." ;;
@@ -660,6 +790,7 @@ sub_debian() {
 }
 
 sub_ubuntu() {
+  # Clear the screen from pervious menu
   clear
   echo " ==Ubuntu Options== "
   echo
@@ -680,6 +811,7 @@ sub_ubuntu() {
         ubuntu_custom ;;
       "Main Menu")
        echo "Return to main menu"
+       clear
        menu
        ;;
       *) echo "Invalid option, please try again." ;;
@@ -688,17 +820,18 @@ sub_ubuntu() {
 }
 
 sub_fedora() {
+  # Clear the screen from pervious menu
+  clear
+  echo " ==Fedora Options=="
+  echo 
+  echo " The quick option creates a VM with predefined" 
+  echo " variables."
   echo
-  echo "======================================================="
-  echo "= The quick option creates a VM with predefined       =" 
-  echo "= variables.                                          ="
-  echo "=                                                     ="
-  echo "= The custom option creates a VM with user specified  ="
-  echo "= options.                                            ="
-  echo "======================================================="
+  echo " The custom option creates a VM with user specified"
+  echo " options."
   echo
   local PS3="Please select an option below: "
-  local options=("Quick" "Custom" "Main")
+  local options=("Quick" "Custom" "Main Menu")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -706,8 +839,9 @@ sub_fedora() {
         fedora_quick ;;
       "Custom")
         fedora_custom ;;
-      "Main")
+      "Main Menu")
        echo "Return to main menu"
+       clear
        menu
        ;;
       *) echo "Invalid option, please try again." ;;
@@ -716,17 +850,18 @@ sub_fedora() {
 }
 
 sub_centos() {
+  # Clear the screen from pervious menu
+  clear
+  echo " ==CentOS Options=="
   echo
-  echo "======================================================="
-  echo "= The quick option creates a VM with predefined       =" 
-  echo "= variables.                                          ="
-  echo "=                                                     ="
-  echo "= The custom option creates a VM with user specified  ="
-  echo "= options.                                            ="
-  echo "======================================================="
+  echo " The quick option creates a VM with predefined" 
+  echo " variables."
+  echo
+  echo " The custom option creates a VM with user specified"
+  echo " options."
   echo
   local PS3="Please select an option below: "
-  local options=("Quick" "Custom" "Main")
+  local options=("Quick" "Custom" "Main Menu")
   local opt
   select opt in "${options[@]}"; do
     case $opt in
@@ -734,8 +869,38 @@ sub_centos() {
         centos_quick ;;
       "Custom")
         centos_custom ;;
-      "Main")
+      "Main Menu")
        echo "Return to main menu"
+       clear
+       menu
+       ;;
+      *) echo "Invalid option, please try again." ;;
+    esac
+  done
+}
+sub_opensuse() {
+  # Clear the screen from pervious menu
+  clear
+  echo " ==openSUSE Options=="
+  echo
+  echo " The quick option creates a VM with predefined" 
+  echo " variables."
+  echo
+  echo " The custom option creates a VM with user specified"
+  echo " options."
+  echo
+  local PS3="Please select an option below: "
+  local options=("Quick" "Custom" "Main Menu")
+  local opt
+  select opt in "${options[@]}"; do
+    case $opt in
+      "Quick")
+        opensuse_quick ;;
+      "Custom")
+        opensuse_custom ;;
+      "Main Menu")
+       echo "Return to main menu"
+       clear
        menu
        ;;
       *) echo "Invalid option, please try again." ;;
@@ -747,14 +912,14 @@ menu() {
   echo
   echo "=============================================================="
   echo "= The myvm bash script is able to download cloud images from ="
-  echo "= Debian, Fedora, and Ubuntu, utilizing Cloud-init to prov- ="
+  echo "= Debian, Fedora, and Ubuntu, utilizing Cloud-init to prov-  ="
   echo "= ide hostname, username, password, etc... to the VM.        ="
   echo "=                                                            ="
   echo "= Please select an option below to get started.              ="
   echo "=============================================================="
   echo
   PS3='Please select an option: '
-  options=("Download" "Ubuntu" "Debian" "Fedora" "CentOS" "Help" "Quit")
+  options=("Download" "Ubuntu" "Debian" "Fedora" "CentOS" "openSUSE" "Help" "Quit")
   select opt in "${options[@]}"; do
     case $opt in
       "Download")
@@ -767,6 +932,8 @@ menu() {
         sub_fedora ;;
       "CentOS")
         sub_centos ;;
+      "openSUSE")
+        sub_opensuse ;;
       "Help")
         help_func ;;
       "Quit")
