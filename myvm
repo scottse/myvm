@@ -162,7 +162,8 @@ EOF
     --import \
     --noautoconsole
   
-  # Return user back to main menu
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -226,7 +227,8 @@ EOF
     --import \
     --noautoconsole
 
-# Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -280,7 +282,8 @@ EOF
     --import \
     --noautoconsole
   
-  # Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 debian_custom() {
@@ -342,8 +345,8 @@ EOF
     --network network=default,model=virtio \
     --import \
     --noautoconsole
-
-# Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -469,7 +472,8 @@ EOF
     --import \
     --noautoconsole
 
-# Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -526,9 +530,10 @@ EOF
     --network network=$QUICK_NET,model=virtio \
     --import \
     --noautoconsole
-  # Return to main menu.
-  menu
-
+  
+  # Clear the screen and return user back to main menu
+  clear
+  menu  
 }
 
 centos_custom() {
@@ -595,7 +600,8 @@ EOF
     --import \
     --noautoconsole
 
-# Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -652,9 +658,10 @@ EOF
     --network network=$QUICK_NET,model=virtio \
     --import \
     --noautoconsole
-  # Return to main menu.
+  
+  # Clear the screen and return user back to main menu
+  clear
   menu
-
 }
 
 opensuse_custom() {
@@ -721,7 +728,8 @@ EOF
     --import \
     --noautoconsole
 
-# Return to main menu.
+  # Clear the screen and return user back to main menu
+  clear
   menu
 }
 
@@ -912,15 +920,13 @@ sub_opensuse() {
 
 menu() {
   echo
-  echo "=============================================================="
-  echo "= The myvm bash script is able to download cloud images from ="
-  echo "= Debian, Fedora, and Ubuntu, utilizing Cloud-init to prov-  ="
-  echo "= ide hostname, username, password, etc... to the VM.        ="
-  echo "=                                                            ="
-  echo "= Please select an option below to get started.              ="
-  echo "=============================================================="
+  echo " The myvm bash script is able to download cloud images from "
+  echo " Debian, Fedora, and Ubuntu, utilizing Cloud-init to provide "
+  echo " hostname, username, password, etc... to the VM. "
   echo
-  PS3='Please select an option: '
+  echo " Please select an option below to get started "
+  echo 
+  PS3='Select an option: '
   options=("Download" "Ubuntu" "Debian" "Fedora" "CentOS" "openSUSE" "Help" "Quit")
   select opt in "${options[@]}"; do
     case $opt in
