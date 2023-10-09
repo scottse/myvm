@@ -1,10 +1,23 @@
 #!/usr/bin/env bash
 
-# Libvirt connection for remote systems.
-LV_CONN=""
+################################################################################
+# myvm is a script designed to either create a quick VM or a custom VM from
+# cloud VM images from Debian, Ubuntu, Centos, Fedora, and OpenSUSE.
+# 
+# Requirements:
+# The script needs virt-install and cloud-localds packages to be installed.
+# 
+################################################################################
+# Change Log:
+# 2023/10/8 - Minor updates, removing settings from testing.
+#
+################################################################################
+
 # Username and hashed password for VMs.
-USERNAME=""
-PASSWORD=""
+LV_CONN=""
+USERNAME=''
+# Use either openssl or mkpasswd to create a hashed password. e.g. openssl passwd -6 or mkpasswd -m sha-512.
+PASSWORD=''
 # SSH Public key
 SSH_PUB_KEY=""
 # Disk size for quick VMs.
@@ -14,7 +27,7 @@ QUICK_MEM_SIZE=2048
 # Network used by quick VMs.
 QUICK_NET="default"
 # Network used by custom VMs.
-CUSTOM_NET="default"
+CUSTOM_NET="br0"
 # Libvirt VM images storage
 LV_IMG_DIR='/var/lib/libvirt/images'
 # Where the cloud-init config iso is stored.
@@ -24,15 +37,20 @@ LV_CLD_IMG_DIR="/var/lib/libvirt/cloud-images"
 # Where the cloud-init config files are stored.
 LV_CLD_DIR='/var/lib/libvirt/cloud-init'
 # Ubuntu 22.04 download link
-UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
+# UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
+UBUNTU_CLD_IMG='http://192.168.1.8/jammy-server-cloudimg-amd64.img'
 # Debian 12 download link
-DEBIAN_CLD_IMG='https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2'
+# DEBIAN_CLD_IMG='https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2'
+DEBIAN_CLD_IMG='http://192.168.1.8/debian-12-generic-amd64.qcow2'
 # Fedora 38 download link
-FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
+# FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
+FEDORA_CLD_IMG='http://phobos/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
 # CentOS 9 Stream download link
-CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
+# CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
+CENTOS_CLD_IMG='http://phobos/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
 # OpenSuse Leap download link
-OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
+#OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
+OPENSUSE_CLD_IMG="http://192.168.1.8/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
 # Ubuntu File Name
 UBUNTU_FNAME='ubuntu2204-cldimg.qcow2'
 # Debian File Name
@@ -287,7 +305,6 @@ EOF
   # Return user back to main menu
   menu
 }
-
 debian_custom() {
   # Asking user for specific parameters for the custom VM.
   while :; do
@@ -738,6 +755,10 @@ EOF
     --network network=$CUSTOM_NET,model=virtio \
     --import \
     --noautoconsole
+
+
+  # Return user back to main menu
+  menu
 }
 
 sub_download() {
