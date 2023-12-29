@@ -10,7 +10,7 @@
 ################################################################################
 # Change Log:
 # 2023/10/8 - Minor updates, removing settings from testing.
-#
+# 2023/12/29 - Removed test image download links.
 ################################################################################
 
 # Username and hashed password for VMs.
@@ -27,7 +27,7 @@ QUICK_MEM_SIZE=2048
 # Network used by quick VMs.
 QUICK_NET="default"
 # Network used by custom VMs.
-CUSTOM_NET="br0"
+CUSTOM_NET=""
 # Libvirt VM images storage
 LV_IMG_DIR='/var/lib/libvirt/images'
 # Where the cloud-init config iso is stored.
@@ -37,20 +37,15 @@ LV_CLD_IMG_DIR="/var/lib/libvirt/cloud-images"
 # Where the cloud-init config files are stored.
 LV_CLD_DIR='/var/lib/libvirt/cloud-init'
 # Ubuntu 22.04 download link
-# UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
-UBUNTU_CLD_IMG='http://192.168.1.8/jammy-server-cloudimg-amd64.img'
+UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
 # Debian 12 download link
-# DEBIAN_CLD_IMG='https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2'
-DEBIAN_CLD_IMG='http://192.168.1.8/debian-12-generic-amd64.qcow2'
+DEBIAN_CLD_IMG='https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2'
 # Fedora 38 download link
-# FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
-FEDORA_CLD_IMG='http://phobos/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
+FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/38/Cloud/x86_64/images/Fedora-Cloud-Base-38-1.6.x86_64.qcow2'
 # CentOS 9 Stream download link
-# CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
-CENTOS_CLD_IMG='http://phobos/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
+CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
 # OpenSuse Leap download link
-#OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
-OPENSUSE_CLD_IMG="http://192.168.1.8/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
+OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
 # Ubuntu File Name
 UBUNTU_FNAME='ubuntu2204-cldimg.qcow2'
 # Debian File Name
