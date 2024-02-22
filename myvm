@@ -13,6 +13,7 @@
 # 2023/12/29 - Removed test image download links.
 # 2024/02/22 - Updated Fedora image link to Fedora 39.
 #              Removed version numbers from comments for download links.
+#              Updated renamed cloud image file names.
 ################################################################################
 
 # Username and hashed password for VMs.
@@ -49,15 +50,15 @@ CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-St
 # OpenSuse Leap download link
 OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
 # Ubuntu File Name
-UBUNTU_FNAME='ubuntu2204-cldimg.qcow2'
+UBUNTU_FNAME='ubuntu-cldimg.qcow2'
 # Debian File Name
-DEBIAN_FNAME='debian-12-cldimg.qcow2'
+DEBIAN_FNAME='debian-cldimg.qcow2'
 # Fedora File Name
-FEDORA_FNAME='fedora38-cldimg.qcow2'
+FEDORA_FNAME='fedora-cldimg.qcow2'
 # CentOS File Name
-CENTOS_FNAME='centos-s9-cldimg.qcow2'
+CENTOS_FNAME='centos-cldimg.qcow2'
 # OpenSUSE File Name
-OPENSUSE_FNAME="openSUSE-Leap-15.3-cldimg.qcow2"
+OPENSUSE_FNAME="openSUSE-Leap-cldimg.qcow2"
 
 d_ubuntu_img() {
     if [ -e $LV_CLD_IMG_DIR/$UBUNTU_FNAME ]; then
