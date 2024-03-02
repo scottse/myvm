@@ -940,7 +940,7 @@ echo "   - LV_CLD_DIR - This directory stores the cloud-init files. "
 echo "   - LV_CLD_IMG_DIR - This directory stores the download Linux cloud images. "
 echo "   - LV_CLD_INIT_ISO_DIR - This directory stores the cloud-init iso made by cloud-localds. "
 echo "3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to "
-echo     create a hashed password.
+echo "   create a hashed password. "
 echo "4) Generate a ssh-key pair and put the pubkey inside of the SSH_PUB_KEY variable. "
 echo "5) Networking - in the CUSTOM_NET and QUICK_NET - set the name of the net device the VM will use. "
 echo "6) For the QUICK_DISK_SIZE and QUICK_MEM_SIZE variable, set the desired sizes for both varaibles. "
