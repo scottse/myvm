@@ -9,11 +9,12 @@
 # 
 ################################################################################
 # Change Log:
-# 2023/10/8 - Minor updates, removing settings from testing.
+# 2023/10/08 - Minor updates, removing settings from testing.
 # 2023/12/29 - Removed test image download links.
 # 2024/02/22 - Updated Fedora image link to Fedora 39.
 #              Removed version numbers from comments for download links.
 #              Updated renamed cloud image file names.
+# 2024/03/02 - Added help section
 ################################################################################
 
 # Username and hashed password for VMs.
@@ -926,6 +927,24 @@ sub_opensuse() {
   done
 }
 
+help() {
+
+echo "myvm uses Linux cloud images to create VMs with. "
+
+echo "The setup: "
+echo "1) Install virt-install and cloud-localds. Please refer to your distro package manager for the specific package name"
+echo "2) Create the directories - There are four variables LV_CLD_DIR, LV_CLD_IMG_DIR, "
+echo "   LV_CLD_INIT_ISO_DIR and LV_IMG_DIR which store cloud-init files, cloud images, isos, and the VM qcow2 files. "
+echo "   - LV_IMG_DIR - The directory Stores the VM qcow2 files. "
+echo "   - LV_CLD_DIR - This directory stores the cloud-init files. "
+echo "   - LV_CLD_IMG_DIR - This directory stores the download Linux cloud images. "
+echo "   - LV_CLD_INIT_ISO_DIR - This directory stores the cloud-init iso made by cloud-localds. "
+echo "3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to "
+echo     create a hashed password.
+echo "4) Generate a ssh-key pair and put the pubkey inside of the SSH_PUB_KEY variable. "
+echo "5) Networking - in the CUSTOM_NET and QUICK_NET - set the name of the net device the VM will use. "
+echo "6) For the QUICK_DISK_SIZE and QUICK_MEM_SIZE variable, set the desired sizes for both varaibles. "
+
 menu() {
   echo
   echo " The myvm bash script is able to download cloud images from "
@@ -951,7 +970,7 @@ menu() {
       "openSUSE")
         sub_opensuse ;;
       "Help")
-        help_func ;;
+        help ;;
       "Quit")
         echo "Exiting"
         exit 0
