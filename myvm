@@ -14,7 +14,7 @@
 # 2024/02/22 - Updated Fedora image link to Fedora 39.
 #              Removed version numbers from comments for download links.
 #              Updated renamed cloud image file names.
-# 2024/03/02 - Added help section
+# 2024/03/02 - Added help section, updated cloud-init variable.
 ################################################################################
 
 # Username and hashed password for VMs.
@@ -39,7 +39,7 @@ LV_CLD_INIT_ISO_DIR='/var/lib/libvirt/cloud-init-iso'
 # Where the Linux cloud images are stored.
 LV_CLD_IMG_DIR="/var/lib/libvirt/cloud-images"
 # Where the cloud-init config files are stored.
-LV_CLD_DIR='/var/lib/libvirt/cloud-init'
+LV_CLD_INIT='/var/lib/libvirt/cloud-init'
 # Ubuntu download link
 UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
 # Debian download link
@@ -133,10 +133,10 @@ ubuntu_quick() {
 
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $vm_name."
-  mkdir $LV_CLD_DIR/$vm_name
+  mkdir $LV_CLD_INIT/$vm_name
 
   # Create user-data file.
-  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -154,7 +154,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  $LV_CLD_INIT/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
@@ -199,10 +199,10 @@ ubuntu_custom() {
   
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $u_vm_name."
-  mkdir $LV_CLD_DIR/$u_vm_name
+  mkdir $LV_CLD_INIT/$u_vm_name
 
   # Create user-data file.
-  cat > $LV_CLD_DIR/$u_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$u_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -220,7 +220,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$u_vm_name.iso \
-  $LV_CLD_DIR/$u_vm_name/cloud-init.cfg
+  $LV_CLD_INIT/$u_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $u_vm_name.qcow2 from cloud image file."
@@ -255,11 +255,11 @@ debian_quick() {
 
   # Create Cloud-init directory.
   echo "Creating a cloud-init directory for $vm_name."
-  mkdir $LV_CLD_DIR/$vm_name
+  mkdir $LV_CLD_INIT/$vm_name
 
   # Create the cloud-init.cfg file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -276,7 +276,7 @@ EOF
 
 # Creates the cloud-init.iso file.
   cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg
+  $LV_CLD_INIT/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
@@ -320,11 +320,11 @@ debian_custom() {
  
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $deb_vm_name."
-  mkdir $LV_CLD_DIR/$deb_vm_name
+  mkdir $LV_CLD_INIT/$deb_vm_name
 
   # Create the cloud-init.cfg file.
   echo "Creating the cloud-init iso file."
-  cat > $LV_CLD_DIR/$deb_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$deb_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -341,7 +341,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   cloud-localds $LV_CLD_INIT_ISO_DIR/$deb_vm_name.iso \
-  $LV_CLD_DIR/$deb_vm_name/cloud-init.cfg
+  $LV_CLD_INIT/$deb_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $deb_vm_name.qcow2 from cloud image file."
@@ -375,15 +375,15 @@ fedora_quick() {
   
   # Create cloud-init directory.
   echo "Creating a new directory for $vm_name."
-  mkdir $LV_CLD_DIR/$vm_name
+  mkdir $LV_CLD_INIT/$vm_name
   
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $vm_name
 EOF
   # Create user-data file.
-  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -400,7 +400,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg
+  $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
@@ -445,15 +445,15 @@ fedora_custom() {
 
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $f_vm_name."
-  mkdir $LV_CLD_DIR/$f_vm_name
+  mkdir $LV_CLD_INIT/$f_vm_name
 
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$f_vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$f_vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $f_vm_name
 EOF
   # Create user-data file.
-  cat > $LV_CLD_DIR/$f_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$f_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -470,7 +470,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$f_vm_name.iso \
-  $LV_CLD_DIR/$f_vm_name/cloud-init.cfg $LV_CLD_DIR/$f_vm_name/meta-data.cfg
+  $LV_CLD_INIT/$f_vm_name/cloud-init.cfg $LV_CLD_INIT/$f_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $f_vm_name.qcow2 from cloud image file."
@@ -505,15 +505,15 @@ centos_quick() {
   
   # Create cloud-init directory.
   echo "Creating a new directory for $vm_name."
-  mkdir $LV_CLD_DIR/$vm_name
+  mkdir $LV_CLD_INIT/$vm_name
   
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $vm_name
 EOF
   # Create user-data file
-  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -530,7 +530,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg 
+  $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
@@ -575,15 +575,15 @@ centos_custom() {
 
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $c_vm_name."
-  mkdir $LV_CLD_DIR/$c_vm_name
+  mkdir $LV_CLD_INIT/$c_vm_name
 
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$c_vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$c_vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $c_vm_name
 EOF
   # Create user-data file.
-  cat > $LV_CLD_DIR/$c_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$c_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -600,7 +600,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$c_vm_name.iso \
-  $LV_CLD_DIR/$c_vm_name/cloud-init.cfg $LV_CLD_DIR/$c_vm_name/meta-data.cfg
+  $LV_CLD_INIT/$c_vm_name/cloud-init.cfg $LV_CLD_INIT/$c_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $c_vm_name.qcow2 from cloud image file."
@@ -635,15 +635,15 @@ opensuse_quick() {
   
   # Create cloud-init directory.
   echo "Creating a new directory for $vm_name."
-  mkdir $LV_CLD_DIR/$vm_name
+  mkdir $LV_CLD_INIT/$vm_name
   
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $vm_name
 EOF
   # Create user-data file
-  cat > $LV_CLD_DIR/$vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -660,7 +660,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$vm_name.iso \
-  $LV_CLD_DIR/$vm_name/cloud-init.cfg $LV_CLD_DIR/$vm_name/meta-data.cfg 
+  $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $vm_name.qcow2 from cloud image file."
@@ -705,15 +705,15 @@ opensuse_custom() {
 
   # Create cloud-init directory.
   echo "Creating a cloud-init directory for $o_vm_name."
-  mkdir $LV_CLD_DIR/$o_vm_name
+  mkdir $LV_CLD_INIT/$o_vm_name
 
   # Create meta-data file.
-  cat > $LV_CLD_DIR/$o_vm_name/meta-data.cfg << EOF
+  cat > $LV_CLD_INIT/$o_vm_name/meta-data.cfg << EOF
 #cloud-config
 local-hostname: $o_vm_name
 EOF
   # Create user-data file.
-  cat > $LV_CLD_DIR/$o_vm_name/cloud-init.cfg << EOF
+  cat > $LV_CLD_INIT/$o_vm_name/cloud-init.cfg << EOF
 #cloud-config
 system_info:
   default_user:
@@ -730,7 +730,7 @@ EOF
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
   cloud-localds $LV_CLD_INIT_ISO_DIR/$o_vm_name.iso \
-  $LV_CLD_DIR/$o_vm_name/cloud-init.cfg $LV_CLD_DIR/$o_vm_name/meta-data.cfg
+  $LV_CLD_INIT/$o_vm_name/cloud-init.cfg $LV_CLD_INIT/$o_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $o_vm_name.qcow2 from cloud image file."
@@ -933,10 +933,10 @@ echo "myvm uses Linux cloud images to create VMs with. "
 
 echo "The setup: "
 echo "1) Install virt-install and cloud-localds. Please refer to your distro package manager for the specific package name"
-echo "2) Create the directories - There are four variables LV_CLD_DIR, LV_CLD_IMG_DIR, "
+echo "2) Create the directories - There are four variables LV_CLD_INIT, LV_CLD_IMG_DIR, "
 echo "   LV_CLD_INIT_ISO_DIR and LV_IMG_DIR which store cloud-init files, cloud images, isos, and the VM qcow2 files. "
 echo "   - LV_IMG_DIR - The directory Stores the VM qcow2 files. "
-echo "   - LV_CLD_DIR - This directory stores the cloud-init files. "
+echo "   - LV_CLD_INIT - This directory stores the cloud-init files. "
 echo "   - LV_CLD_IMG_DIR - This directory stores the download Linux cloud images. "
 echo "   - LV_CLD_INIT_ISO_DIR - This directory stores the cloud-init iso made by cloud-localds. "
 echo "3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to "
