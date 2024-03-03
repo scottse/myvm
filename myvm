@@ -35,7 +35,7 @@ CUSTOM_NET=""
 # Libvirt VM images storage
 LV_IMG='/var/lib/libvirt/images'
 # Where the cloud-init config iso is stored.
-LV_CLD-INIT_ISO='/var/lib/libvirt/cloud-init-iso'
+LV_CLDINIT_ISO='/var/lib/libvirt/cloud-init-iso'
 # Where the Linux cloud images are stored.
 LV_CLD_IMG="/var/lib/libvirt/cloud-images"
 # Where the cloud-init config files are stored.
@@ -153,7 +153,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$vm_name.iso \
   $LV_CLD_INIT/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
@@ -171,7 +171,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG/$vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$vm_name.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -219,7 +219,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$u_vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$u_vm_name.iso \
   $LV_CLD_INIT/$u_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
@@ -237,7 +237,7 @@ EOF
     --memory $u_memory \
     --vcpus=$u_vcpus \
     --disk $LV_IMG/$u_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$u_vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$u_vm_name.iso,device=cdrom \
     --os-variant=ubuntu-lts-latest \
     --virt-type kvm \
     --graphics vnc \
@@ -275,7 +275,7 @@ ssh_pwauth: True
 EOF
 
 # Creates the cloud-init.iso file.
-  cloud-localds $LV_CLD-INIT_ISO/$vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$vm_name.iso \
   $LV_CLD_INIT/$vm_name/cloud-init.cfg
   
   # Copy the cloud image and rename it to the VM name.
@@ -293,7 +293,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$vm_name.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -340,7 +340,7 @@ ssh_pwauth: True
 EOF
 
   # Creates the cloud-init.iso file.
-  cloud-localds $LV_CLD-INIT_ISO/$deb_vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$deb_vm_name.iso \
   $LV_CLD_INIT/$deb_vm_name/cloud-init.cfg
 
   # Copy the cloud image and rename it to the VM name.
@@ -358,7 +358,7 @@ EOF
     --memory $deb_memory \
     --vcpus=$deb_vcpus \
     --disk $LV_IMG/$deb_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$deb_vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$deb_vm_name.iso,device=cdrom \
     --os-variant=debian12 \
     --virt-type kvm \
     --graphics vnc \
@@ -399,7 +399,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$vm_name.iso \
   $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg
   
   # Copy the cloud image and rename it to the VM name.
@@ -417,7 +417,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$vm_name.iso,device=cdrom \
     --os-variant=fedora38 \
     --virt-type kvm \
     --graphics vnc \
@@ -469,7 +469,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$f_vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$f_vm_name.iso \
   $LV_CLD_INIT/$f_vm_name/cloud-init.cfg $LV_CLD_INIT/$f_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
@@ -487,7 +487,7 @@ EOF
     --memory $f_memory \
     --vcpus=$f_vcpus \
     --disk $LV_IMG/$f_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$f_vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$f_vm_name.iso,device=cdrom \
     --os-variant=fedora38 \
     --virt-type kvm \
     --graphics vnc \
@@ -529,7 +529,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$vm_name.iso \
   $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
@@ -547,7 +547,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$vm_name.iso,device=cdrom \
     --os-variant=centos-stream9 \
     --virt-type kvm \
     --graphics vnc \
@@ -599,7 +599,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$c_vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$c_vm_name.iso \
   $LV_CLD_INIT/$c_vm_name/cloud-init.cfg $LV_CLD_INIT/$c_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
@@ -617,7 +617,7 @@ EOF
     --memory $c_memory \
     --vcpus=$c_vcpus \
     --disk $LV_IMG/$c_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$c_vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$c_vm_name.iso,device=cdrom \
     --os-variant=centos-stream9 \
     --virt-type kvm \
     --graphics vnc \
@@ -659,7 +659,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$vm_name.iso \
   $LV_CLD_INIT/$vm_name/cloud-init.cfg $LV_CLD_INIT/$vm_name/meta-data.cfg 
   
   # Copy the cloud image and rename it to the VM name.
@@ -677,7 +677,7 @@ EOF
     --memory $QUICK_MEM_SIZE \
     --vcpus=1 \
     --disk $LV_IMG/$os_disk.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$vm_name.iso,device=cdrom \
     --os-variant=opensuse15.4 \
     --virt-type kvm \
     --graphics vnc \
@@ -729,7 +729,7 @@ EOF
 
   # Creates the cloud-init.iso file.
   echo "Creating the cloud-init iso file."
-  cloud-localds $LV_CLD-INIT_ISO/$o_vm_name.iso \
+  cloud-localds $LV_CLDINIT_ISO/$o_vm_name.iso \
   $LV_CLD_INIT/$o_vm_name/cloud-init.cfg $LV_CLD_INIT/$o_vm_name/meta-data.cfg
 
   # Copy the cloud image and rename it to the VM name.
@@ -747,7 +747,7 @@ EOF
     --memory $o_memory \
     --vcpus=$c_vcpus \
     --disk $LV_IMG/$o_vm_name.qcow2,device=disk,bus=virtio \
-    --disk $LV_CLD-INIT_ISO/$o_vm_name.iso,device=cdrom \
+    --disk $LV_CLDINIT_ISO/$o_vm_name.iso,device=cdrom \
     --os-variant=opensuse15.4 \
     --virt-type kvm \
     --graphics vnc \
@@ -934,11 +934,11 @@ echo "myvm uses Linux cloud images to create VMs with. "
 echo "The setup: "
 echo "1) Install virt-install and cloud-localds. Please refer to your distro package manager for the specific package name"
 echo "2) Create the directories - There are four variables LV_CLD_INIT, LV_CLD_IMG, "
-echo "   LV_CLD-INIT_ISO and LV_IMG which store cloud-init files, cloud images, isos, and the VM qcow2 files. "
+echo "   LV_CLDINIT_ISO and LV_IMG which store cloud-init files, cloud images, isos, and the VM qcow2 files. "
 echo "   - LV_IMG - The directory Stores the VM qcow2 files. "
 echo "   - LV_CLD_INIT - This directory stores the cloud-init files. "
 echo "   - LV_CLD_IMG - This directory stores the download Linux cloud images. "
-echo "   - LV_CLD-INIT_ISO - This directory stores the cloud-init iso made by cloud-localds. "
+echo "   - LV_CLDINIT_ISO - This directory stores the cloud-init iso made by cloud-localds. "
 echo "3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to "
 echo "   create a hashed password. "
 echo "4) Generate a ssh-key pair and put the pubkey inside of the SSH_PUB_KEY variable. "
