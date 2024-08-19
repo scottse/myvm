@@ -644,5 +644,5 @@ if [[ -e /usr/bin/virt-install && -e /usr/bin/cloud-localds ]]; then
   menu
 else
 echo "Virt-install or cloud-localds appears to be not install. Please install virt-install "
-echo "or cloud-localds and try again."
+echo "or cloud-localds and try again. On Ubuntu, run apt install virtinst cloud-image-utils."
 fi
