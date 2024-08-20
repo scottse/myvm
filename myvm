@@ -313,7 +313,7 @@ EOF
 
   # Copy the cloud image and rename it to the VM name.
   echo "Copying $alpine_vm_name.qcow2 from cloud image file."
-  cp $LV_CLD_IMG/$UBUNTU_FNAME $LV_IMG/$alpine_vm_name.qcow2
+  cp $LV_CLD_IMG/$ALPINE_FNAME $LV_IMG/$alpine_vm_name.qcow2
   
   # Resize VM disk size.
   echo "Resizing VM disk space to $alpine_disk_size."
