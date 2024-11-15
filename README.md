@@ -1,6 +1,6 @@
 ## myvm
 
-The myvm script is used for creating a quick VM using cloud-based images from distros like Ubuntu, Fedora, CentOS, Debian, Alpine and OpenSuSE
+The myvm script is used for creating a quick VM using cloud-based images from distros like Ubuntu, Fedora, CentOS, Debian, Alpine and OpenSuSE.
 
 The setup:
 1) Install virt-install and cloud-localds. Please refer to your distro package manager for the specific package name"
