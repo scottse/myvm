@@ -21,7 +21,7 @@ Example:
 
 3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to create a hashed password. 
 4) Generate a ssh-key pair and put the pubkey inside of the SSH_PUB_KEY variable.
-5) Networking - In the VM_NETWORK type in which NIC or network device the VM will use, like default or br0.
+5) Networking - The VM_NETWORK variable is where the name of the network the VM will connect to, like br0 or default.
 
 ### Requirements:
 The script needs virt-install and cloud-localds packages to be installed.
