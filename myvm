@@ -18,6 +18,7 @@
 # 2024/08/01 - Removed the quick VM option from the script
 #              Added Alpine Linux
 #              Updated function names
+# 2024/11/14 - Updated help section and updated cloud image download URLs.
 ################################################################################
 
 # Username and hashed password for VMs.
@@ -40,15 +41,15 @@ LV_CLD_INIT='/var/lib/libvirt/cloud-init'
 # Alpine download link
 ALPINE_CLD_IMG='https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/cloud/nocloud_alpine-3.20.2-x86_64-bios-cloudinit-r0.qcow2'
 # Ubuntu download link
-UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/jammy/current/jammy-server-cloudimg-amd64.img'
+UBUNTU_CLD_IMG='https://cloud-images.ubuntu.com/noble/current/noble-server-cloudimg-amd64.img'
 # Debian download link
 DEBIAN_CLD_IMG='https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2'
 # Fedora download link
-FEDORA_CLD_IMG='https://download.fedoraproject.org/pub/fedora/linux/releases/39/Cloud/x86_64/images/Fedora-Cloud-Base-39-1.5.x86_64.qcow2'
+FEDORA_CLD_IMG='https://fedora.mirror.constant.com/fedora/linux/releases/41/Cloud/x86_64/images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2'
 # CentOS Stream download link
 CENTOS_CLD_IMG='https://cloud.centos.org/centos/9-stream/x86_64/images/CentOS-Stream-GenericCloud-9-latest.x86_64.qcow2'
 # OpenSuse Leap download link
-OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.3/images/openSUSE-Leap-15.3.x86_64-NoCloud.qcow2"
+OPENSUSE_CLD_IMG="https://download.opensuse.org/repositories/Cloud:/Images:/Leap_15.6/images/openSUSE-Leap-15.6.x86_64-NoCloud.qcow2"
 # Alpine File Name
 ALPINE_FNAME='alpine-cldimg.qcow2'
 # Ubuntu File Name
@@ -586,7 +587,7 @@ download() {
 
 help() {
 
-echo "myvm uses Linux cloud images to create VMs with. "
+echo "The myvm script is used for creating a quick VM using cloud-based images from distros like Ubuntu, Fedora, CentOS, Debian, Alpine and OpenSuSE. "
 
 echo "The setup: "
 echo "1) Install virt-install and cloud-localds. Please refer to your distro package manager for the specific package name"
@@ -599,7 +600,7 @@ echo "   - LV_CLDINIT_ISO - This directory stores the cloud-init iso made by clo
 echo "3) Provide the username and password in the USERNAME and PASSWORD variable. Use commands like mkpasswd or openssl to "
 echo "   create a hashed password. "
 echo "4) Generate a ssh-key pair and put the pubkey inside of the SSH_PUB_KEY variable. "
-echo "5) Networking - In the VM_NETWORK type in which NIC or network device the VM will use, like default or br0."
+echo "5) Networking - The VM_NETWORK variable is where the name of the network the VM will connect to, like br0 or default."
 }
 
 menu() {
@@ -631,7 +632,6 @@ menu() {
       "Help")
         help ;;
       "Quit")
-        echo "Exiting"
         exit 0
         ;;
       *) echo "Invalid option, please try again." ;;
