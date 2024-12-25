@@ -169,6 +169,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
@@ -236,6 +238,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
@@ -300,6 +304,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
@@ -371,6 +377,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
@@ -441,6 +449,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
@@ -511,6 +521,8 @@ system_info:
     home: /home/$USERNAME
     ssh_authorized_keys:
       - $SSH_PUB_KEY
+    sudo: ALL=(ALL) ALL
+    groups: sudo
 
 password: $PASSWORD
 chpasswd: { expire: False }
